@@ -1,0 +1,14 @@
+{
+  "name": "qrapp",
+  "version": "0.1.0",
+  "description": "QR Scanner (RSPi)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Samir D",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^1.8.4"
+  }
+}
