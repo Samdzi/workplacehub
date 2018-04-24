@@ -5,6 +5,7 @@ const url = require('url')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
+let server
 
 function createWindow() {
     // Create browser window
@@ -12,13 +13,13 @@ function createWindow() {
 
     // and load the index.html of the app.
     win.loadURL(url.format({
-        pathname: path.join(__dirname, 'index.html'),
+        pathname: path.join(__dirname, 'src/index.html'),
         protocol: 'file:',
         slashes: true
     }))
 
     // Open the DevTools
-    //win.webContents.openDevTools()
+    win.webContents.openDevTools()
 
     // Emitted when the window is closed.
     win.on('closed', () => {
@@ -27,15 +28,33 @@ function createWindow() {
         // when you should delete the corresponding element.
         win = null
     })
+}
 
-    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    Menu.setApplicationMenu(mainMenu);
+function setServer() {
+    var net = require('net');
+    var textChunk =  '';
+
+    var server = net.createServer( function (socket) {
+        socket.write('Echo server\r\n')
+        socket.on('data', function (data) {
+            console.log(data)
+            console.log(typeof data)
+            textChunk = data.toString('utf8')
+            console.log(textChunk)
+            socket.write(textChunk)
+            win.webContents.send('ping', textChunk)
+        })
+    })
+    server.listen(8000, '192.168.0.178')
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', () => {
+    createWindow()
+    setServer()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -45,33 +64,3 @@ app.on('window-all-closed', () => {
         app.quit()
     }
 })
-
-app.on('activate', () => {
-    // On macOS it's common to re-create a window in the app when the 
-    // dock icon is clicked and there are no other windows open.
-    if (win === null) {
-        createWindow()
-    }
-})
-
-// Menu
-const mainMenuTemplate = [
-    {
-        label: 'File',
-    }
-];
-
-// Server
-var net = require('net');
-var textChunk = '';
-var server = net.createServer(function(socket) {
-    socket.write('Echo server\r\n');
-    socket.on('data', function(data){
-        console.log(data);
-        console.log(typeof data);
-        textChunk = data.toString('utf8');
-        console.log(textChunk);
-        socket.write(textChunk)
-    });
-});
-server.listen(8000, '192.168.0.199')
